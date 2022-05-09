@@ -17,7 +17,7 @@ contract Staker {
   bool public openForWithdraw = false;
   
   event Staked(address staker, uint256 amount);
-  event Withdrawal(address receiver, uint256 amount);
+  event Withdrawal(address receiver);
   event Executed(uint256 contractBalance, uint256 deadline);
 
   modifier afterDeadline() {
@@ -39,12 +39,12 @@ contract Staker {
     emit Staked(msg.sender, _amount);
   }
 
-  function withdraw(uint256 _amount ) public openWithdraw() {
-    require (_amount <= balances[msg.sender], 'Balance does not cover withdrawal request.');
-      balances[msg.sender] -= _amount;
-      payable(msg.sender).transfer(_amount);
+  function withdraw( ) public openWithdraw() {
+    require (balances[msg.sender] > 0, 'Balance does not cover withdrawal request.');
+      payable(msg.sender).transfer(balances[msg.sender]);
+      balances[msg.sender] = 0;
 
-      emit Withdrawal(msg.sender, _amount);
+      emit Withdrawal(msg.sender);
   }
 
   function timeLeft() public view returns(uint256) {

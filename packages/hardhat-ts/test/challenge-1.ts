@@ -137,7 +137,7 @@ describe("🚩 Challenge 1: 🥩 Decentralized Staking App", function () {
           console.log("startingBalance before withdraw", ethers.utils.formatEther(startingBalance))
 
           console.log('\t'," 💵 calling withdraw")
-          await expect(stakerContract.withdraw(secondAccount.address)).to.revertedWith('Balance does not cover withdrawal request.');
+          await expect(stakerContract.withdraw()).to.emit(stakerContract, "Withdrawal");
 
           const endingBalance = await ethers.provider.getBalance(secondAccount.address);
           console.log("endingBalance after withdraw", ethers.utils.formatEther(endingBalance))
