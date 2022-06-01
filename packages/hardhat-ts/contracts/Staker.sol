@@ -13,7 +13,7 @@ contract Staker {
 
   mapping ( address => uint256 ) public balances;
   uint256 public constant threshold = 1 ether;
-  uint256 public deadline = block.timestamp + 30 seconds;
+  uint256 public deadline = block.timestamp + 72 hours;
   bool public openForWithdraw = false;
   
   event Staked(address staker, uint256 amount);
@@ -32,17 +32,22 @@ contract Staker {
     require(openForWithdraw == true, 'Staking pool is not currently open for withdrawal.');
     _;
   }
+  
+  receive() external payable {
+    stake();
+}
 
-  function stake(uint256 _amount) public payable beforeDeadline(){
-    balances[msg.sender] += _amount;
+  function stake() public payable beforeDeadline(){
+    balances[msg.sender] += msg.value;
 
-    emit Staked(msg.sender, _amount);
+    emit Staked(msg.sender, msg.value);
   }
 
-  function withdraw( ) public openWithdraw() {
+  function withdraw( ) public openWithdraw() afterDeadline() {
     require (balances[msg.sender] > 0, 'Balance does not cover withdrawal request.');
-      payable(msg.sender).transfer(balances[msg.sender]);
       balances[msg.sender] = 0;
+      (bool sent, bytes memory data) = msg.sender.call{value: balances[msg.sender]}("");
+      require(sent, "Failed to send Ether");
 
       emit Withdrawal(msg.sender);
   }
@@ -59,7 +64,7 @@ contract Staker {
     return address(this).balance;
   }
 
-  function execute() public {
+  function execute() public afterDeadline() {
     if (address(this).balance >= threshold) {
       exampleExternalContract.complete{value: address(this).balance}();
       deadline = block.timestamp + 30 seconds;
@@ -73,12 +78,5 @@ contract Staker {
   // Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
   //  ( make sure to add a `Stake(address,uint256)` event and emit it for the frontend <List/> display )
 
-  // After some `deadline` allow anyone to call an `execute()` function
-  //  It should either call `exampleExternalContract.complete{value: address(this).balance}()` to send all the value
-
-  // if the `threshold` was not met, allow everyone to call a `withdraw()` function
-
   // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
-
-  // Add the `receive()` special function that receives eth and calls stake()
 }

@@ -81,7 +81,7 @@ export const Staker: FC<StakerProps> = (props) => {
   }, [yourCurrentBalance]);
 
   // ** 📟 Listen for broadcast events
-  const stakeEvents = useEventListener(stakeContractRead, 'Stake', 1);
+  const stakeEvents = useEventListener(stakeContractRead, 'Staked', 1);
 
   let completeDisplay = <></>;
   if (completed) {
@@ -146,7 +146,7 @@ export const Staker: FC<StakerProps> = (props) => {
           type={balanceStaked ? 'primary' : 'default'}
           onClick={() => {
             if (tx) {
-              tx(stakeContractWrite.stake(ethers.utils.parseEther('0.5')));
+              tx(stakeContractWrite.stake({ value: 0.5 }));
             }
           }}>
           🥩 Stake 0.5 ether!
